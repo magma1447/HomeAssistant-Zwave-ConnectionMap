@@ -14,6 +14,8 @@ After installing the above packages we will need to enable the php extension as 
 
 An alternative is to reconfigure php.ini to allow dynamically loading of modules. This might not be possible at all with recent versions of PHP though.
 
+Note that it doesn't have to be installed on the same server as your Home Assistant. You can install it somewhere else and just copy two two required files that are needed to generate the connection graph.
+
 ## Usage
 The controller is hard coded as Node 001. If this isn't correct, it can be changed in the source code around line 12.  
 `php -f zwave-map.php <OZW.log> <zwcfg.xml>`  
