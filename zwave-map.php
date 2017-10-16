@@ -207,5 +207,5 @@ foreach($nodes as $id => $n) {
 gv::write($gv, 'zwave-map.dot');
 
 echo "Dot file created, now you need to use GraphViz to actually render the image:\n";
-echo "  cat zwave-map.dot |dot -Tsvg -ozwave-map.svg\n";
+echo "  dot -Tsvg -ozwave-map.svg zwave-map.dot\n";
 

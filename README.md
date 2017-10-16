@@ -21,5 +21,5 @@ The controller is hard coded as Node 001. If this isn't correct, it can be chang
 The script itself stores a dot-file as zwave-map.dot in current working directory.
 
 To generate an image file from the dot file you will have to use Graphviz. Two examples:  
-`cat zwave-map.dot |dot -Tsvg -ozwave-map.svg`  
-`cat zwave-map.dot |dot -Tpng -ozwave-map.png`
+`dot -Tsvg -ozwave-map.svg zwave-map.dot`  
+`dot -Tpng -ozwave-map.png zwave-map.dot`
