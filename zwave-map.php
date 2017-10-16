@@ -129,7 +129,7 @@ for($maxHops = 1 ; $maxHops <= 4 ; $maxHops++) {
 		}
 
 		if(!isset($n['neighbors'])) {	// Should not happen, this is a workaround
-			echo "Warning, node {$id} has no neighbors\n";
+			echo "  WARNING: Node {$id} has no neighbors\n";
 			$nodes[$id]['hops'] = 5;
 			continue;
 		}
@@ -145,7 +145,7 @@ for($maxHops = 1 ; $maxHops <= 4 ; $maxHops++) {
 		}
 		if($hops <= $maxHops) {
 			$nodes[$id]['hops'] = $hops;
-			echo "{$id} has {$hops} hops to the controller\n";
+			echo "  {$id} has {$hops} hops to the controller\n";
 		}
 	}
 }
@@ -170,7 +170,11 @@ foreach($nodes as $id => $n) {
 }
 $addedEdges = array();
 foreach($nodes as $id => $n) {
-	if(!empty($n['neighbors'])) foreach($n['neighbors'] as $neighbor) {
+	if(empty($n['neighbors'])) {
+		echo "  WARNING: Node {$id} still doesn't have any neighbors (actually expected now)\n";
+		continue;
+	}
+	foreach($n['neighbors'] as $neighbor) {
 		// Sort nodes and check that the connection isn't already drawn
 		$n1 = min(array($id, $neighbor));
 		$n2 = max(array($id, $neighbor));
@@ -192,5 +196,6 @@ foreach($nodes as $id => $n) {
 }
 gv::write($gv, 'zwave-map.dot');
 
-echo "cat zwave-map.dot |dot -Tsvg -ozwave-map.svg\n";
+echo "Dot file created, now you need to use GraphViz to actually render the image:\n";
+echo "  cat zwave-map.dot |dot -Tsvg -ozwave-map.svg\n";
 

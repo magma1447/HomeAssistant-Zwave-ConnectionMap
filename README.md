@@ -9,6 +9,7 @@ We will need to enable the extension as well. This is done by:
 The alternative is to reconfigure php.ini to allow dynamically loading of modules.
 
 ## Usage
+The controller is hard coded as Node 001. If this isn't correct, it can be changed in the source code around line 12.
 `php -f zwave-map.php <OZW.log> <zwcfg.xml>`  
 Stores output as zwave-map.dot
 
