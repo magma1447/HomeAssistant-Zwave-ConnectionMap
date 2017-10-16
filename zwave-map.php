@@ -163,8 +163,8 @@ foreach($nodes as $id => $n) {
 	if($id === $controllerId) {
 		gv::setv($nodes[$id]['nodeHandle'], 'fontcolor', 'white');
 		gv::setv($nodes[$id]['nodeHandle'], 'fillcolor', 'gray50');
-		gv::setv($nodes[$id]['nodeHandle'], 'style', 'filled');
 		gv::setv($nodes[$id]['nodeHandle'], 'color', 'black');
+		gv::setv($nodes[$id]['nodeHandle'], 'style', 'bold,filled');
 		continue;
 	}
 	gv::setv($nodes[$id]['nodeHandle'], 'color', GetNodeColor($n['hops']));
