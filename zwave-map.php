@@ -197,7 +197,8 @@ foreach($nodes as $id => $n) {
 		gv::setv($edgeHandle, 'color', GetEdgeColor($hops+1));
 
 		// Dash connections that aren't the shortest path
-		$solid = ($n['hops'] != $nodes[$neighbor]['hops']);
+		// If the difference is 1, it's the shortest path for one of them
+		$solid = (abs($n['hops'] - $nodes[$neighbor]['hops']) == 1);
 		if(!$solid) {
 			gv::setv($edgeHandle, 'style', 'dashed');
 		}
