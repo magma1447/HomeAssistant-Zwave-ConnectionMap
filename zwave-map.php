@@ -129,6 +129,7 @@ for($maxHops = 1 ; $maxHops <= 4 ; $maxHops++) {
 		}
 
 		if(!isset($n['neighbors'])) {	// Should not happen, this is a workaround
+			echo "Warning, node {$id} has no neighbors\n";
 			$nodes[$id]['hops'] = 5;
 			continue;
 		}
@@ -181,6 +182,7 @@ foreach($nodes as $id => $n) {
 			continue;
 		}
 		$addedEdges[$edge] = TRUE;
+		// --
 
 		$edgeHandle = gv::edge($n['nodeHandle'], $nodes[$neighbor]['nodeHandle']);
 
