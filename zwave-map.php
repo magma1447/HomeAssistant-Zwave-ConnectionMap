@@ -54,6 +54,7 @@ function GetEdgeColor($hops) {
 
 
 
+
 $nodes = array();
 
 
@@ -174,6 +175,8 @@ foreach($nodes as $id => $n) {
 		echo "  WARNING: Node {$id} still doesn't have any neighbors (actually expected now)\n";
 		continue;
 	}
+
+
 	foreach($n['neighbors'] as $neighbor) {
 		// Sort nodes and check that the connection isn't already drawn
 		$n1 = min(array($id, $neighbor));
@@ -192,6 +195,12 @@ foreach($nodes as $id => $n) {
 
 		$hops = min(array($nodes[$n1]['hops'], $nodes[$n2]['hops']));
 		gv::setv($edgeHandle, 'color', GetEdgeColor($hops+1));
+
+		// Dash connections that aren't the shortest path
+		$solid = ($n['hops'] != $nodes[$neighbor]['hops']);
+		if(!$solid) {
+			gv::setv($edgeHandle, 'style', 'dashed');
+		}
 	}
 }
 gv::write($gv, 'zwave-map.dot');
