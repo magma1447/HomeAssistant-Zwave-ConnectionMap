@@ -156,8 +156,6 @@ for($maxHops = 1 ; $maxHops <= 4 ; $maxHops++) {
 echo "Rendering graph\n";
 $gv = new Image_GraphViz();
 foreach($nodes as $id => $n) {
-	//$nodes[$id]['nodeHandle'] = gv::node($gv, $id);
-	//gv::setv($nodes[$id]['nodeHandle'], 'label', $n['name']);
 	$attributes = array(
 		'label' => $n['name'],
 		'color' => GetNodeColor($n['hops']),
@@ -207,7 +205,6 @@ foreach($nodes as $id => $n) {
 			$attributes['style'] = 'dashed';
 		}
 
-		//$edgeHandle = gv::edge($n['nodeHandle'], $nodes[$neighbor]['nodeHandle']);
 		$gv->addEdge(array($id => $neighbor), $attributes);
 
 
