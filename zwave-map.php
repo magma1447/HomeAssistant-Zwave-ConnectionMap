@@ -1,14 +1,14 @@
 <?php
 
-// Requires: libgv-php5
-// echo extension=gv.so > /etc/php5/mods-available/gv.so && php5enmod gv
+require_once('GraphViz.php');
 
 
-if($argc !== 3) {
-	die("Usage: {$argv[0]} OZW.log zwcfg.xml\n");
+if($argc !== 4) {
+	die("Usage: {$argv[0]} OZW.log zwcfg.xml image.svg\n");
 }
 $ozwLog = $argv[1];
 $zwcfg = $argv[2];
+$imageFilename= $argv[3];
 $controllerId = 1;
 
 
@@ -154,21 +154,26 @@ for($maxHops = 1 ; $maxHops <= 4 ; $maxHops++) {
 
 
 echo "Rendering graph\n";
-require_once('/usr/share/php/libgv-php5/gv.php');
-$gv = gv::graph ('zwave-map');
+$gv = new Image_GraphViz();
 foreach($nodes as $id => $n) {
-	$nodes[$id]['nodeHandle'] = gv::node($gv, $id);
-	gv::setv($nodes[$id]['nodeHandle'], 'label', $n['name']);
-
+	//$nodes[$id]['nodeHandle'] = gv::node($gv, $id);
+	//gv::setv($nodes[$id]['nodeHandle'], 'label', $n['name']);
+	$attributes = array(
+		'label' => $n['name'],
+		'color' => GetNodeColor($n['hops']),
+	);
 	if($id === $controllerId) {
-		gv::setv($nodes[$id]['nodeHandle'], 'fontcolor', 'white');
-		gv::setv($nodes[$id]['nodeHandle'], 'fillcolor', 'gray50');
-		gv::setv($nodes[$id]['nodeHandle'], 'color', 'black');
-		gv::setv($nodes[$id]['nodeHandle'], 'style', 'bold,filled');
-		continue;
+		$attributes = array_merge($attributes, array(
+				'fontcolor' => 'white',
+				'fillcolor', 'gray50',
+				'color' => 'black',
+				'style' => 'bold,filled',
+			)
+		);
 	}
-	gv::setv($nodes[$id]['nodeHandle'], 'color', GetNodeColor($n['hops']));
+	$gv->addNode($id, $attributes);
 }
+
 $addedEdges = array();
 foreach($nodes as $id => $n) {
 	if(empty($n['neighbors'])) {
@@ -191,21 +196,25 @@ foreach($nodes as $id => $n) {
 		$addedEdges[$edge] = TRUE;
 		// --
 
-		$edgeHandle = gv::edge($n['nodeHandle'], $nodes[$neighbor]['nodeHandle']);
-
+		$attributes = array();
+		// Set color depending on number of hops to the controller
 		$hops = min(array($nodes[$n1]['hops'], $nodes[$n2]['hops']));
-		gv::setv($edgeHandle, 'color', GetEdgeColor($hops+1));
-
+		$attributes['color'] = GetEdgeColor($hops+1);
 		// Dash connections that aren't the shortest path
 		// If the difference is 1, it's the shortest path for one of them
 		$solid = (abs($n['hops'] - $nodes[$neighbor]['hops']) == 1);
 		if(!$solid) {
-			gv::setv($edgeHandle, 'style', 'dashed');
+			$attributes['style'] = 'dashed';
 		}
+
+		//$edgeHandle = gv::edge($n['nodeHandle'], $nodes[$neighbor]['nodeHandle']);
+		$gv->addEdge(array($id => $neighbor), $attributes);
+
+
 	}
 }
-gv::write($gv, 'zwave-map.dot');
-
-echo "Dot file created, now you need to use GraphViz to actually render the image:\n";
-echo "  dot -Tsvg -ozwave-map.svg zwave-map.dot\n";
+$ext = pathinfo($imageFilename, PATHINFO_EXTENSION);
+$image = $gv->fetch($ext);
+file_put_contents($imageFilename, $image);
+echo "Image saved as {$imageFilename}\n";
 

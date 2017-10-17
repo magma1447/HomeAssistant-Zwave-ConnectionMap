@@ -5,14 +5,11 @@ This should be compatible with anything based on OpenZWave that has a OZW_Log.tx
 
 ## Installation
 Start by installing required packages. The below command is based on Debian Jessie.  
-`apt-get install php5-cli libgv-php5 graphviz`
+`apt-get install php5-cli php-pear graphviz`
+
+Either get GraphViz.php from [GitHub](https://github.com/pear/Image_GraphViz/blob/trunk/Image/GraphViz.php) or install it via pear, `pear install Image_GraphViz`.
 
 In current stable (stretch) the first package would be *php7-cli*. The package *graphviz* is only needed to convert the dot file into an image.
-
-After installing the above packages we will need to enable the php extension as well. This is done with:  
-`echo extension=gv.so > /etc/php5/mods-available/gv.so && php5enmod gv`
-
-An alternative is to reconfigure php.ini to allow dynamically loading of modules. This might not be possible at all with recent versions of PHP though.
 
 Note that it doesn't have to be installed on the same server as your Home Assistant. You can install it somewhere else and just copy two two required files that are needed to generate the connection graph.
 
