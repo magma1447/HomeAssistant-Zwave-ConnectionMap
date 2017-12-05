@@ -146,7 +146,7 @@ for($maxHops = 1 ; $maxHops <= 4 ; $maxHops++) {
 				$hops = $nodes[$neighbor]['hops']+1;
 			}
 		}
-		if($hops <= $maxHops) {
+		if($hops !== FALSE && $hops <= $maxHops) {
 			$nodes[$id]['hops'] = $hops;
 			echo "  {$id} has {$hops} hops to the controller\n";
 		}
@@ -159,7 +159,7 @@ echo "Rendering graph\n";
 $gv = new Image_GraphViz();
 foreach($nodes as $id => $n) {
 	$attributes = array(
-		'label' => $n['name'],
+		'label' => "{$n['name']}\n({$id})",
 		'color' => GetNodeColor($n['hops']),
 	);
 	if($id === $controllerId) {
@@ -177,7 +177,7 @@ foreach($nodes as $id => $n) {
 $addedEdges = array();
 foreach($nodes as $id => $n) {
 	if(empty($n['neighbors'])) {
-		echo "  WARNING: Node {$id} still doesn't have any neighbors (actually expected now)\n";
+		echo "  WARNING: Node {$id} still doesn't have any neighbors (expected now)\n";
 		continue;
 	}
 
