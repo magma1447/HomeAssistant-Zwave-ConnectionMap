@@ -16,6 +16,6 @@ In current stable (stretch) the first package would be *php7-cli*.
 Note that it doesn't have to be installed on the same server as your Home Assistant. You can install it somewhere else and just copy the two required files that are needed to generate the connection graph.
 
 ## Usage
-The controller is hard coded as Node 001. If this isn't correct, it can be changed in the source code around line 12.  
+The controller is hard coded as Node 001. If this isn't correct, it can be changed in the source code around line 12. It might make sense to run a z-wave network heal before running this tool.  
 `php -f zwave-map.php <OZW.log> <zwcfg.xml> <image.svg>`  
 
