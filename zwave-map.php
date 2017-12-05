@@ -57,7 +57,6 @@ function GetEdgeColor($hops) {
 
 $nodes = array();
 
-
 echo "Reading XML\n";
 $xml = file_get_contents($zwcfg);
 $xml = new SimpleXMLElement($xml);
@@ -73,7 +72,12 @@ foreach($xml->Node as $v) {
 
 	$nodes[$id]['name'] = $name;
 }
-
+/*
+$fixed = array(1,2,3,4,5,6,9,10,13,15,17,18,19,20,21);
+foreach($fixed as $n) {
+	$nodes[$n]['name'] = $n;
+}
+*/
 
 
 /*
@@ -84,7 +88,6 @@ foreach($xml->Node as $v) {
 echo "Reading OZW log\n";
 $buf = file_get_contents($ozwLog);
 $buf = explode(PHP_EOL, $buf);
-$neighbors = FALSE;
 foreach($buf as $line) {
 
 	if(preg_match('/.*Info, Node([0-9]{3}), +Neighbors of this node are:$/', $line, $matches) === 1) {
@@ -97,11 +100,8 @@ foreach($buf as $line) {
 		}
 
 		$nodes[$node]['neighbors'] = array();
-		$neighbors = TRUE;
-		continue;
 	}
-
-	if($neighbors === TRUE && preg_match('/.*Info, Node([0-9]{3}), +Node ([0-9]+)$/', $line, $matches) === 1) {
+	else if(preg_match('/.*Info, Node([0-9]{3}), +Node ([0-9]+)$/', $line, $matches) === 1) {
 		$node = (int) $matches[1];
 		$neighbor = (int) $matches[2];
 	
@@ -110,12 +110,14 @@ foreach($buf as $line) {
 		if(!isset($nodes[$node])) {
 			die("Node {$node} not initialized\n");
 		}
+		if(!isset($nodes[$node]['neighbors'])) {
+			echo "WARNING: {$node} -> {$neighbor} listed before a list header, ignoring\n";
+			continue;
+		}
 
 		if(!in_array($neighbor, $nodes[$node]['neighbors'])) {
 			$nodes[$node]['neighbors'][] = $neighbor;
 		}
-	} else {
-		$neighbors = FALSE;
 	}
 }
 
@@ -194,7 +196,7 @@ foreach($nodes as $id => $n) {
 		$addedEdges[$edge] = TRUE;
 		// --
 
-		$attributes = array();
+		$attributes = array('dir' => 'none');
 		// Set color depending on number of hops to the controller
 		$hops = min(array($nodes[$n1]['hops'], $nodes[$n2]['hops']));
 		$attributes['color'] = GetEdgeColor($hops+1);
