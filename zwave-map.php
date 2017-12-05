@@ -58,26 +58,28 @@ function GetEdgeColor($hops) {
 $nodes = array();
 
 echo "Reading XML\n";
-$xml = file_get_contents($zwcfg);
-$xml = new SimpleXMLElement($xml);
-foreach($xml->Node as $v) {
-	$id = (int) $v['id'];
-	$name = $v['name'];
-	$name = reset($name);	// No clue why I get an array back
-
-	if(empty($name)) {
-		$name = "{$v->Manufacturer['name']} {$v->Manufacturer->Product['name']}";
+if(FALSE) {	//  For debug when not having the xml file, should normally be FALSE
+	$fixed = array(1,2,3,4,5,6,9,10,13,15,17,18,19,20,21);
+	foreach($fixed as $n) {
+		$nodes[$n]['name'] = $n;
 	}
-	echo "{$id} => {$name}\n";
+} else {
+	$xml = file_get_contents($zwcfg);
+	$xml = new SimpleXMLElement($xml);
+	foreach($xml->Node as $v) {
+		$id = (int) $v['id'];
+		$name = $v['name'];
+		$name = reset($name);	// No clue why I get an array back
 
-	$nodes[$id]['name'] = $name;
+		if(empty($name)) {
+			$name = "{$v->Manufacturer['name']} {$v->Manufacturer->Product['name']}";
+		}
+		echo "{$id} => {$name}\n";
+
+		$nodes[$id]['name'] = $name;
+	}
 }
-/*
-$fixed = array(1,2,3,4,5,6,9,10,13,15,17,18,19,20,21);
-foreach($fixed as $n) {
-	$nodes[$n]['name'] = $n;
-}
-*/
+
 
 
 /*
@@ -153,6 +155,14 @@ for($maxHops = 1 ; $maxHops <= 4 ; $maxHops++) {
 	}
 }
 
+// Set hops to FALSE for nodes without neighbors
+foreach($nodes as $id => $n) {
+	if(isset($nodes[$id]['hops']) && $nodes[$id]['hops'] !== 5) {
+		continue;
+	}
+	$nodes[$id]['hops'] = FALSE;
+}
+
 
 
 echo "Rendering graph\n";
@@ -174,37 +184,57 @@ foreach($nodes as $id => $n) {
 	$gv->addNode($id, $attributes);
 }
 
-$addedEdges = array();
+$addedBidirectionals = array();
 foreach($nodes as $id => $n) {
 	if(empty($n['neighbors'])) {
-		echo "  WARNING: Node {$id} still doesn't have any neighbors (expected now)\n";
+		echo "  WARNING: Node {$id} still doesn't have any neighbors (on battery?)\n";
 		continue;
 	}
 
 
 	foreach($n['neighbors'] as $neighbor) {
-		// Sort nodes and check that the connection isn't already drawn
-		$n1 = min(array($id, $neighbor));
-		$n2 = max(array($id, $neighbor));
-		if($n1 === $n2) {	// It seems weird that this happens
-			continue;
-		}
-		$edge = "{$n1}:{$n2}";
-		if(isset($addedEdges[$edge])) {
-			continue;
-		}
-		$addedEdges[$edge] = TRUE;
-		// --
+		$direction = (!empty($nodes[$neighbor]['neighbors']) && in_array($id, $nodes[$neighbor]['neighbors'])) ? 'both' : 'forward';
 
-		$attributes = array('dir' => 'none');
+		// If bidirectional, check that it's not already added
+		if($direction == 'both') {
+			$n1 = min(array($id, $neighbor));
+			$n2 = max(array($id, $neighbor));
+			if(isset($addedBidirectionals["{$n1}:{$n2}"])) {
+				continue;
+			}
+			$addedBidirectionals["{$n1}:{$n2}"] = TRUE;
+		}
+
+
+
+		$attributes = array('dir' => $direction);
+
 		// Set color depending on number of hops to the controller
-		$hops = min(array($nodes[$n1]['hops'], $nodes[$n2]['hops']));
-		$attributes['color'] = GetEdgeColor($hops+1);
+		if($n['hops'] === FALSE || $nodes[$neighbor]['hops'] === FALSE) {
+			$attributes['color'] = GetEdgeColor(FALSE);
+		} else {
+			$hops = min(array($nodes[$id]['hops'], $nodes[$neighbor]['hops']));
+			$attributes['color'] = GetEdgeColor($hops+1);
+		}
+
 		// Dash connections that aren't the shortest path
 		// If the difference is 1, it's the shortest path for one of them
-		$solid = (abs($n['hops'] - $nodes[$neighbor]['hops']) == 1);
-		if(!$solid) {
+		if($n['hops'] === FALSE || $nodes[$neighbor]['hops'] === FALSE) {
+			$hopDiff = FALSE;
+		} else {
+			$hopDiff = abs($n['hops'] - $nodes[$neighbor]['hops']);
+		}
+		if($hopDiff === 1 && $direction == 'both') {
+			$attributes['style'] = 'solid';
+		}
+		else if($hopDiff === 1 && $direction == 'forward' && $n['hops'] > $nodes[$neighbor]['hops']) {
+			$attributes['style'] = 'solid';
+		}
+		else if($hopDiff !== FALSE) {
 			$attributes['style'] = 'dashed';
+		}
+		else {
+			$attributes['style'] = 'dotted';
 		}
 
 		$gv->addEdge(array($id => $neighbor), $attributes);
